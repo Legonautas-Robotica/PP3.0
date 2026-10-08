@@ -34,12 +34,44 @@ public class Constants {
     public static PinpointConfig localizerConfig = new PinpointConfig(c -> {
         c.name.set("pinpoint");
         c.podType.set(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        c.xPodOffset.set(5.677496241772269);
-        c.yPodOffset.set(5.925828828586368);
+        c.xPodOffset.set(6.5);
+        c.yPodOffset.set(-3.0);
         c.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
         c.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
         c.globalDistanceUnit.set(DistanceUnit.INCH);
         c.offsetUnits.set(DistanceUnit.INCH);
     });
+    public static ForesightConfig foresightConfig = new ForesightConfig(
+            c -> {
+                Controller primaryTranslationalForward = Controller.proportional(0.23573161334938808);
+                Controller secondaryTranslationalForward = Controller.proportional(0.08709653226788235);
+                Controller primaryTranslationalLateral = Controller.proportional(0.30535672476761827);
+                Controller secondaryTranslationalLateral = Controller.proportional(0.1128211505196775);
+
+                c.forwardTranslational.set(Controller.piecewise(secondaryTranslationalForward).put(2.5, primaryTranslationalForward));
+                c.strafeTranslational.set(Controller.piecewise(secondaryTranslationalLateral).put(2.5, primaryTranslationalLateral));
+
+                c.coast.set(Controller.proportionalFeedforward(0.019613112266653427));
+                c.brake.set(Controller.proportionalFeedforward(0.016671145426655414));
+
+                c.headingFeedback.set(Controller.proportional(3.648800636226754));
+                c.headingBrakeCoefficients.set(Vector2D.cartesian(0.03810792699674086, 0.01116045283758587));
+
+                c.linearBrakeCoefficients.set(Matrix.diag(0.058856603781401805, 0.060496059481104494));
+                c.quadraticBrakeCoefficients.set(Matrix.diag(0.0016177696259450588, 0.001425392802253762));
+
+                c.maxAchievableForwardVelocity.set(56.660514406443085);
+                c.maxAchievableStrafeVelocity.set(48.990440866325194);
+                c.naturalForwardDeceleration.set(45.856836868987315);
+                c.naturalStrafeDeceleration.set(70.96443924200457);
+            }
+    );
+    public static Follower create(HardwareMap h) {
+        return new Follower(
+                new PinpointLocalizer(h, localizerConfig),
+                new Mecanum(h, drivetrainConfig),
+                new Foresight(foresightConfig)
+        );
+    }
 
 }

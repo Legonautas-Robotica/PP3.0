@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static java.lang.Math.abs;
+
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -13,14 +15,17 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @TeleOp
 public class Teleop extends OpMode {
-    DcMotorEx motorDID, motorDIE, motorTD, motorTE;
+    DcMotorEx motorDID, motorDIE, motorTD, motorTE,lan;
     DcMotor intake;
     IMU imu;
     float multiplicadorVelocidade = 1.0f;
-
+    int velocidadeideal = 1400;
+    String statuslancador = "";
     @Override
     public void init() {
         intake = hardwareMap.get(DcMotor.class, "Intake");
+        lan = hardwareMap.get(DcMotorEx.class, "lan");
+        lan.setDirection(DcMotorEx.Direction.REVERSE);
 
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
@@ -73,7 +78,7 @@ public class Teleop extends OpMode {
         // Counteract imperfect strafing
         rotX = rotX * 1.3;
 
-        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+        double denominator = Math.max(abs(rotY) + abs(rotX) + abs(rx), 1);
         double frontLeftPower = (rotY + rotX + rx) / denominator;
         double backLeftPower = (rotY - rotX + rx) / denominator;
         double frontRightPower = (rotY - rotX - rx) / denominator;
@@ -84,6 +89,34 @@ public class Teleop extends OpMode {
         motorTD.setPower(backRightPower * multiplicadorVelocidade);
         motorDID.setPower(frontRightPower * multiplicadorVelocidade);
 
-        intake.setPower(gamepad1.right_stick_y);
+       // lan.setPower(gamepad1.right_stick_y*0.7);
+        lan.setVelocity(velocidadeideal);
+
+        if (gamepad1.right_bumper){
+            intake.setPower(1.0);
+        } else if (gamepad1.left_bumper){
+            intake.setPower(-1.0);
+        }else {
+            intake.setPower(0);
+        }
+
+        if (gamepad1.dpad_up){
+            velocidadeideal = 1400;
+        } else if (gamepad1.dpad_down) {
+            velocidadeideal = 1200;
+        } else {
+            velocidadeideal = 0;
+        }
+
+        if (abs(lan.getVelocity()-velocidadeideal)<50){
+            statuslancador = "pode lançar";
+        }
+        else {
+            statuslancador= "não lança";
+        }
+
+        telemetry.addData("velocidadeideal", velocidadeideal);
+        telemetry.addData("velocidade atual", lan.getVelocity());
+        telemetry.update();
     }
 }
