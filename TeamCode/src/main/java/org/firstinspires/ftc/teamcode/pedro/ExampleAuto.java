@@ -75,6 +75,5 @@ public class ExampleAuto extends OpMode {
     public void loop() {
         follower.update();
         Scheduler.execute();
-
     }
 }

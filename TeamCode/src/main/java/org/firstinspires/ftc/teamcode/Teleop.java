@@ -10,25 +10,33 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @TeleOp
 public class Teleop extends OpMode {
     DcMotorEx motorDID, motorDIE, motorTD, motorTE,lan;
-    DcMotor intake;
+    DcMotor intake, transferidor;
     IMU imu;
     float multiplicadorVelocidade = 1.0f;
-    int velocidadeideal = 1400;
+    int velocidadeideal = 1300;
     String statuslancador = "";
+    Servo SA81BHMW;
     @Override
     public void init() {
         intake = hardwareMap.get(DcMotor.class, "Intake");
+        transferidor = hardwareMap.get(DcMotor.class,"transfer");
         lan = hardwareMap.get(DcMotorEx.class, "lan");
         lan.setDirection(DcMotorEx.Direction.REVERSE);
 
-        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        SA81BHMW = hardwareMap.get(Servo.class, "porta");
+        SA81BHMW.setPosition(0.15);
 
+        transferidor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        transferidor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         motorDID = hardwareMap.get(DcMotorEx.class, "DiD");
@@ -92,31 +100,47 @@ public class Teleop extends OpMode {
        // lan.setPower(gamepad1.right_stick_y*0.7);
         lan.setVelocity(velocidadeideal);
 
-        if (gamepad1.right_bumper){
-            intake.setPower(1.0);
-        } else if (gamepad1.left_bumper){
-            intake.setPower(-1.0);
+        if (gamepad2.right_trigger_pressed && abs(lan.getVelocity()-velocidadeideal) < 25) {
+            transferidor.setPower(1.0);
+        } else if (gamepad2.left_trigger_pressed){
+            transferidor.setPower(-1.0);
+        }else {
+            transferidor.setPower(0);
+        }
+
+        if (gamepad2.right_bumper){
+            intake.setPower(-0.7);
+        } else if (gamepad2.left_bumper) {
+            intake.setPower(0.7);
         }else {
             intake.setPower(0);
         }
 
-        if (gamepad1.dpad_up){
-            velocidadeideal = 1400;
-        } else if (gamepad1.dpad_down) {
-            velocidadeideal = 1200;
-        } else {
-            velocidadeideal = 0;
+        if (gamepad1.a){
+            SA81BHMW.setPosition(0.4);
+        }else if (gamepad1.b){
+            SA81BHMW.setPosition(0.2);
         }
 
-        if (abs(lan.getVelocity()-velocidadeideal)<50){
+        if (gamepad1.dpad_up){
+            velocidadeideal = 1300;
+        } else if (gamepad1.dpad_down) {
+            velocidadeideal = 1250;
+        }
+
+        if (abs(lan.getVelocity()-velocidadeideal) < 25) {
             statuslancador = "pode lançar";
         }
         else {
             statuslancador= "não lança";
         }
 
+
+
+
         telemetry.addData("velocidadeideal", velocidadeideal);
         telemetry.addData("velocidade atual", lan.getVelocity());
+        telemetry.addData("status", statuslancador);
         telemetry.update();
     }
 }
