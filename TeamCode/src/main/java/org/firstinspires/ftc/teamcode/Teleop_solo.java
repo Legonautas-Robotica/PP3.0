@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import static java.lang.Math.abs;
 
+import com.pedropathing.paths.Path;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -10,10 +11,18 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.api.PoseFactory;
+import com.pedropathing.math.Pose;
+import static com.pedropathing.api.Paths.*;
+import com.pedropathing.ivy.Scheduler;
+
+
+import static com.pedropathing.ivy.Scheduler.schedule;
+import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 @TeleOp
 public class Teleop_solo extends OpMode {
@@ -29,6 +38,15 @@ public class Teleop_solo extends OpMode {
     Teste_colorsensor.DetectedColor detectedColor;
     boolean detecteiazul = false;
     boolean detecteiamarelo = true;
+    private Follower follower; // you added this before
+    private final PoseFactory p = PoseFactory.degrees(); // add this
+    private final Pose sPose = p.of(8.3, 24, 0);
+    Pose posicaoAtual = follower.pose();
+    private Path arealanca() {
+        Pose posicaoAtual = follower.pose();
+        return line(posicaoAtual, sPose).linear(posicaoAtual, sPose);}
+
+
 
 
     @Override
@@ -36,7 +54,7 @@ public class Teleop_solo extends OpMode {
         intake = hardwareMap.get(DcMotor.class, "Intake");
         transferidor = hardwareMap.get(DcMotor.class, "transfer");
         lan = hardwareMap.get(DcMotorEx.class, "lan");
-        lan.setDirection(DcMotorEx.Direction.REVERSE);
+        lan.setDirection(DcMotorEx.Direction.FORWARD);
         sensor.init(hardwareMap);
 
         contencao = hardwareMap.get(Servo.class, "porta");
@@ -72,7 +90,12 @@ public class Teleop_solo extends OpMode {
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT);
         imu.initialize(new IMU.Parameters(orientation));
+
+        follower = Constants.create(hardwareMap);
+        Follower follower;
+
     }
+
 
     @Override
     public void loop() {
@@ -145,38 +168,53 @@ public class Teleop_solo extends OpMode {
         }
 
 
-
-
-        if (gamepad1.a){
+        if (gamepad1.a) {
             contencao.setPosition(0.2);
         }
-        if (gamepad1.b){
+        if (gamepad1.b) {
             contencao.setPosition(0.4);
         }
 
         if (detecteiazul) {
             contencao.setPosition(0.4);
-        }
-        else {
+        } else {
             contencao.setPosition(0.2);
         }
         if (detecteiamarelo) {
             contencao.setPosition(0.2);
-        }
-        else {
+        } else {
             contencao.setPosition(0.4);
 
         }
-
-        detectedColor =  sensor.getDetectedColor(telemetry);
-        telemetry.addData("cor detectada", detectedColor);
-
-        telemetry.addData("velocidadeideal", velocidadeideal);
-        telemetry.addData("velocidade atual", lan.getVelocity());
-        telemetry.addData("status", statuslancador);
-        telemetry.update();
+        follower.update();
+        if (gamepad1.x){
+            follow(follower, arealanca());
         }
+
+
+        //detectedColor =  sensor.getDetectedColor(telemetry);
+        //telemetry.addData("cor detectada", detectedColor);
+
+        //telemetry.addData("velocidadeideal", velocidadeideal);
+        //telemetry.addData("velocidade atual", lan.getVelocity());
+        //telemetry.addData("status", statuslancador);
+        // from the example code at the end of the autonomous page
+        follower.update();
+        Scheduler.execute();
+        // add your other methods needed in the loop here
+        telemetry.addData("X", follower.pose().x());
+        telemetry.addData("Y", follower.pose().y());
+        telemetry.addData("Heading", Math.toDegrees(follower.pose().heading()));
+        telemetry.addData("Follower Mode", follower.mode());
+
+        // We will add these two, but you can use the many other follower methods aswell in your own code!
+        telemetry.addData("Path completion", follower.completion());
+        telemetry.addData("Distance remaining in path", follower.remainingDistance());
+        telemetry.update();
+
+        telemetry.update();
     }
+}
 
 
 
