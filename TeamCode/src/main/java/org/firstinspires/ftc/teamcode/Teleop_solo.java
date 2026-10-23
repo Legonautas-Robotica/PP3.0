@@ -16,6 +16,8 @@ import com.pedropathing.api.PoseFactory;
 import com.pedropathing.math.Pose;
 import static com.pedropathing.api.Paths.*;
 import com.pedropathing.ivy.Scheduler;
+import com.pedropathing.drivetrain.DrivePowers;
+import com.pedropathing.follower.ManualDrive;
 
 
 import static com.pedropathing.ivy.Scheduler.schedule;
@@ -42,10 +44,6 @@ public class Teleop_solo extends OpMode {
     private final PoseFactory p = PoseFactory.degrees(); // add this
     private final Pose sPose = p.of(8.3, 24, 0);
     Pose posicaoAtual = follower.pose();
-    private Path arealanca() {
-        Pose posicaoAtual = follower.pose();
-        return line(posicaoAtual, sPose).linear(posicaoAtual, sPose);}
-
 
 
 
@@ -92,7 +90,7 @@ public class Teleop_solo extends OpMode {
         imu.initialize(new IMU.Parameters(orientation));
 
         follower = Constants.create(hardwareMap);
-        Follower follower;
+        follower.setPose(posicaoAtual);
 
     }
 
@@ -184,12 +182,28 @@ public class Teleop_solo extends OpMode {
             contencao.setPosition(0.2);
         } else {
             contencao.setPosition(0.4);
-
         }
+        {
         follower.update();
-        if (gamepad1.x){
-            follow(follower, arealanca());
+            double anguloEmGraus = Math.toDegrees((sPose).heading());
+
+        telemetry.addData("X Atual", x);
+        telemetry.addData("Y Atual", y);
+        telemetry.addData("Ângulo (Graus)", anguloEmGraus);
+        telemetry.update();
+    }
+        {
+            DrivePowers powers = ManualDrive.fieldCentric(
+                    -gamepad1.left_stick_y,
+                    gamepad1.left_stick_x,
+                    gamepad1.right_stick_x,
+                    follower.pose().heading()
+            );
+
+            follower.manual(powers);
+            follower.update();
         }
+
 
 
         //detectedColor =  sensor.getDetectedColor(telemetry);
