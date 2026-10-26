@@ -18,6 +18,7 @@ import static com.pedropathing.api.Paths.*;
 import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.drivetrain.DrivePowers;
 import com.pedropathing.follower.ManualDrive;
+import com.pedropathing.api.PoseFactory;
 
 
 import static com.pedropathing.ivy.Scheduler.schedule;
@@ -25,6 +26,8 @@ import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
+
+import javax.xml.xpath.XPath;
 
 @TeleOp
 public class Teleop_solo extends OpMode {
@@ -43,7 +46,9 @@ public class Teleop_solo extends OpMode {
     private Follower follower; // you added this before
     private final PoseFactory p = PoseFactory.degrees(); // add this
     private final Pose sPose = p.of(8.3, 24, 0);
-    Pose posicaoAtual = follower.pose();
+    Pose arealanca = PoseFactory.degrees().of(81, 9, 270);
+    Path caminholancamento;
+
 
 
 
@@ -90,7 +95,12 @@ public class Teleop_solo extends OpMode {
         imu.initialize(new IMU.Parameters(orientation));
 
         follower = Constants.create(hardwareMap);
+        Pose posicaoAtual  = follower.pose();
         follower.setPose(posicaoAtual);
+        Path caminholancamento = line(posicaoAtual, arealanca)
+                .linear(posicaoAtual, arealanca);
+
+        follower.follow(caminholancamento);
 
     }
 
@@ -199,15 +209,19 @@ public class Teleop_solo extends OpMode {
                     gamepad1.right_stick_x,
                     follower.pose().heading()
             );
+            if (gamepad1.y) {
+                follower.follow(caminholancamento);
+            }
 
             follower.manual(powers);
             follower.update();
+
         }
 
 
 
         //detectedColor =  sensor.getDetectedColor(telemetry);
-        //telemetry.addData("cor detectada", detectedColor);
+        ;//telemetry.addData("cor detectada", detectedColor);
 
         //telemetry.addData("velocidadeideal", velocidadeideal);
         //telemetry.addData("velocidade atual", lan.getVelocity());
