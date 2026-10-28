@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import static java.lang.Math.abs;
 
+import com.pedropathing.api.Paths;
 import com.pedropathing.paths.Path;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -14,18 +15,14 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.api.PoseFactory;
 import com.pedropathing.math.Pose;
-import static com.pedropathing.api.Paths.*;
 import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.drivetrain.DrivePowers;
 import com.pedropathing.follower.ManualDrive;
-import com.pedropathing.api.PoseFactory;
-
-
 import static com.pedropathing.ivy.Scheduler.schedule;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
-
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
+import static com.pedropathing.api.Paths.line;
 
 import javax.xml.xpath.XPath;
 
@@ -47,9 +44,9 @@ public class Teleop_solo extends OpMode {
     private final PoseFactory p = PoseFactory.degrees(); // add this
     private final Pose sPose = p.of(8.3, 24, 0);
     Pose arealanca = PoseFactory.degrees().of(81, 9, 270);
-    Path caminholancamento;
-
-
+    private Path caminholancamento;
+    private boolean modoAutomatico = false;
+    private boolean xAnterior = false;
 
 
     @Override
@@ -95,7 +92,7 @@ public class Teleop_solo extends OpMode {
         imu.initialize(new IMU.Parameters(orientation));
 
         follower = Constants.create(hardwareMap);
-        Pose posicaoAtual  = follower.pose();
+        Pose posicaoAtual = follower.pose();
         follower.setPose(posicaoAtual);
         Path caminholancamento = line(posicaoAtual, arealanca)
                 .linear(posicaoAtual, arealanca);
@@ -194,56 +191,75 @@ public class Teleop_solo extends OpMode {
             contencao.setPosition(0.4);
         }
         {
-        follower.update();
+            follower.update();
             double anguloEmGraus = Math.toDegrees((sPose).heading());
 
-        telemetry.addData("X Atual", x);
-        telemetry.addData("Y Atual", y);
-        telemetry.addData("Ângulo (Graus)", anguloEmGraus);
-        telemetry.update();
-    }
+            telemetry.addData("X Atual", x);
+            telemetry.addData("Y Atual", y);
+            telemetry.addData("Ângulo (Graus)", anguloEmGraus);
+            telemetry.update();
+        }
         {
-            DrivePowers powers = ManualDrive.fieldCentric(
-                    -gamepad1.left_stick_y,
-                    gamepad1.left_stick_x,
-                    gamepad1.right_stick_x,
-                    follower.pose().heading()
-            );
-            if (gamepad1.y) {
+            boolean xPressionado = gamepad1.x;
+
+            if (xPressionado && !xAnterior && !modoAutomatico) {
+
+                Pose posicaoAtual = follower.pose();
+
+                caminholancamento = line(posicaoAtual, arealanca)
+                        .linear(posicaoAtual, arealanca);
+
                 follower.follow(caminholancamento);
+                modoAutomatico = true;
             }
 
-            follower.manual(powers);
-            follower.update();
+            xAnterior = xPressionado;
 
+            if (modoAutomatico) {
+                follower.update();
+
+                if (!follower.isBusy()) {
+                    modoAutomatico = false;
+                }
+
+            } else {
+
+                DrivePowers powers = ManualDrive.fieldCentric(
+                        -gamepad1.left_stick_y,
+                        gamepad1.left_stick_x,
+                        gamepad1.right_stick_x,
+                        follower.pose().heading()
+                );
+
+                follower.manual(powers);
+                follower.update();
+
+
+                //detectedColor =  sensor.getDetectedColor(telemetry);
+                ;//telemetry.addData("cor detectada", detectedColor);
+
+                //telemetry.addData("velocidadeideal", velocidadeideal);
+                //telemetry.addData("velocidade atual", lan.getVelocity());
+                //telemetry.addData("status", statuslancador);
+                // from the example code at the end of the autonomous page
+                follower.update();
+                Scheduler.execute();
+                // add your other methods needed in the loop here
+                telemetry.addData("X", follower.pose().x());
+                telemetry.addData("Y", follower.pose().y());
+                telemetry.addData("Heading", Math.toDegrees(follower.pose().heading()));
+                telemetry.addData("Follower Mode", follower.mode());
+
+                // We will add these two, but you can use the many other follower methods aswell in your own code!
+                telemetry.addData("Path completion", follower.completion());
+                telemetry.addData("Distance remaining in path", follower.remainingDistance());
+                telemetry.update();
+
+                telemetry.update();
+
+            }
         }
 
-
-
-        //detectedColor =  sensor.getDetectedColor(telemetry);
-        ;//telemetry.addData("cor detectada", detectedColor);
-
-        //telemetry.addData("velocidadeideal", velocidadeideal);
-        //telemetry.addData("velocidade atual", lan.getVelocity());
-        //telemetry.addData("status", statuslancador);
-        // from the example code at the end of the autonomous page
-        follower.update();
-        Scheduler.execute();
-        // add your other methods needed in the loop here
-        telemetry.addData("X", follower.pose().x());
-        telemetry.addData("Y", follower.pose().y());
-        telemetry.addData("Heading", Math.toDegrees(follower.pose().heading()));
-        telemetry.addData("Follower Mode", follower.mode());
-
-        // We will add these two, but you can use the many other follower methods aswell in your own code!
-        telemetry.addData("Path completion", follower.completion());
-        telemetry.addData("Distance remaining in path", follower.remainingDistance());
-        telemetry.update();
-
-        telemetry.update();
     }
+
 }
-
-
-
-
