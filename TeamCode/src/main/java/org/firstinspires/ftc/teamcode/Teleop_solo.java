@@ -137,9 +137,9 @@ public class Teleop_solo extends OpMode {
         // lan.setPower(gamepad1.right_stick_y*0.7);
         lan.setVelocity(velocidadeideal);
 
-        if (gamepad1.a) {
+        if (gamepad1.dpad_up) {
             transferidor.setPower(1.0);
-        } else if (gamepad1.b) {
+        } else if (gamepad1.dpad_down) {
             transferidor.setPower(-1.0);
         } else {
             transferidor.setPower(0);
@@ -153,12 +153,6 @@ public class Teleop_solo extends OpMode {
             intake.setPower(0);
         }
 
-        if (gamepad1.dpad_up && abs(lan.getVelocity() - velocidadeideal) < 25) {
-            contencao.setPosition(0.5);
-            transferidor.setPower(1.0);
-        } else {
-            contencao.setPosition(0.2);
-        }
 
         // if (gamepad1.dpad_down){
         //   velocidadeideal = 1250;
