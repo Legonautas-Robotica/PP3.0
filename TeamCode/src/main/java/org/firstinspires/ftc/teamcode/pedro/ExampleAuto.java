@@ -22,39 +22,30 @@ public class ExampleAuto extends OpMode {
     private Follower follower; // you added this before
     private final PoseFactory p = PoseFactory.degrees(); // add this
     private final Pose sPose = p.of(8.3, 24, 0);
-    private final Pose startPose = p.of(8.3, 24, 0);
-    private final Pose pose2 = p.of(70, 15, 0);
-    private final Pose pose3 = p.of(70, 30, 90);
-    private final Pose pose4 = p.of(24, 24, 90);
-    private final Pose endpoint = p.of(24, 118, 90);
+    private final Pose lancamento = p.of(8.3, 24, 0); //posição inicial e posição de lançamento
+    private final Pose parar_coleta_canto = p.of(27, 9.25, 0); //Para na frente das bolas no canto
+    private final Pose posicao_coleta = p.of(2, 9,0); // pós parada, coleta as bolas
+ //   private final Pose pose4 = p.of(24, 24, 90);
+  //  private final Pose endpoint = p.of(24, 118, 90);
 
-    private Path startToScore() {
-        return line(startPose, pose2).linear(startPose, pose2);
+
+    private Path ir_coletar(){
+        return line(lancamento, parar_coleta_canto).linear(lancamento, parar_coleta_canto);
     }
-    private Path tra1(){
-        return line(pose2, pose3).linear(pose2, pose3);
+    private Path coletar(){
+        return line(parar_coleta_canto, posicao_coleta).linear(parar_coleta_canto, posicao_coleta);
     }
-    private Path tra2(){
-        return line(pose3, pose4).linear(pose3, pose4);
-    }
-    private Path tra3(){
-        return line(pose4, endpoint ).linear(pose4, endpoint);
-    }
-    private Path trafinal(){
-        return line(endpoint, startPose ).linear(endpoint, startPose);
+    private Path lancamento2(){
+        return line(posicao_coleta, lancamento ).linear(posicao_coleta, lancamento);
     }
     private Command autoRoutine() {
         return sequential(
-                follow(follower, startToScore()),
                 // Add mechanism commands here.
-                follow(follower, tra1()),
+                follow(follower, ir_coletar()),
 
-                follow(follower, tra2()),
+                follow(follower, coletar()),
 
-                follow(follower, tra3()),
-
-                follow(follower, trafinal())
-
+                follow(follower, lancamento2())
         );
     }
 
