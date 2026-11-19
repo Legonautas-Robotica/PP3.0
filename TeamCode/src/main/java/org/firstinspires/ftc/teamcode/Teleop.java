@@ -20,9 +20,11 @@ public class Teleop extends OpMode {
     DcMotor intake, transferidor;
     IMU imu;
     float multiplicadorVelocidade = 1.0f;
-    int velocidadeideal = 1300;
+    int velocidadeideal = 1100;
     String statuslancador = "";
     Servo SA81BHMW;
+
+    long timervelocidade = System.currentTimeMillis();
     @Override
     public void init() {
         intake = hardwareMap.get(DcMotor.class, "Intake");
@@ -122,10 +124,12 @@ public class Teleop extends OpMode {
             SA81BHMW.setPosition(0.2);
         }
 
-        if (gamepad1.dpad_up){
-            velocidadeideal = 1300;
-        } else if (gamepad1.dpad_down) {
-            velocidadeideal = 1250;
+        if (gamepad1.dpad_up && System.currentTimeMillis() - timervelocidade >500) {
+            velocidadeideal += 50;
+            timervelocidade = System.currentTimeMillis();
+        } else if (gamepad1.dpad_down && System.currentTimeMillis() - timervelocidade >500) {
+            velocidadeideal -= 50;
+            timervelocidade = System.currentTimeMillis();
         }
 
         if (abs(lan.getVelocity()-velocidadeideal) < 25) {

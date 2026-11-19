@@ -91,7 +91,7 @@ public class Teleop_solo extends OpMode {
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT);
         imu.initialize(new IMU.Parameters(orientation));
 
-        follower = Constants.create(hardwareMap);
+        //follower = Constants.create(hardwareMap);
         Pose posicaoAtual = follower.pose();
         follower.setPose(posicaoAtual);
         Path caminholancamento = line(posicaoAtual, arealanca)
