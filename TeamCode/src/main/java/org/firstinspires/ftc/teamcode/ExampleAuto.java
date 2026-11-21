@@ -19,42 +19,27 @@ import static com.pedropathing.ivy.Scheduler.schedule;
 import com.pedropathing.paths.Path;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
+import org.firstinspires.ftc.teamcode.pedro.procedures.Robo;
 
 @Autonomous
 public class ExampleAuto extends OpMode {
+    public Robo mecanismos;
     private Follower follower; // you added this before
     private final PoseFactory p = PoseFactory.degrees(); // add this
     private final Pose startPose = p.of(131, 70, 180);
     private final Pose pose2 = p.of(48, 70, 0);
     private final Pose pose3 = p.of(70, 30, 90);
     private final Pose pose4 = p.of(24, 24, 90);
-    private final Pose endpoint = p.of(24, 118, 90);
+    private final Pose endpoint = p.of(23, 119, -135);
     private final Pose start = p.of(131.3162, 69.7395, 180);
-    private final Pose path1 = p.of(48, 70, 0);
+    private final Pose pose1 = p.of(48, 70, 0);
 
-    public Path path1() {
-        return Paths.line(start, path1).linear(start, path1);
-    }
+    public Path cT(Pose posicaoInicial, Pose posicaoFinal){return Paths.line(posicaoInicial, posicaoFinal).linear(posicaoFinal, posicaoInicial);}
 
-    private Path startToScore() {
-        return line(startPose, pose2).linear(startPose, pose2);
-    }
-    private Path tra1(){
-        return line(pose2, pose3).linear(pose2, pose3);
-    }
-    private Path tra2(){
-        return line(pose3, pose4).linear(pose3, pose4);
-    }
-    private Path tra3(){
-        return line(pose4, endpoint ).linear(pose4, endpoint);
-    }
-    private Path trafinal(){
-        return line(endpoint, startPose ).linear(endpoint, startPose);
-    }
     private Command autoRoutine() {
         return sequential(
-                follow(follower, startToScore())
-
+                follow(follower, cT(start, pose1)),
+                follow(follower, cT(pose1, endpoint))
         );
     }
 
@@ -63,11 +48,13 @@ public class ExampleAuto extends OpMode {
         Scheduler.reset();
         follower = Constants.create(hardwareMap);
         follower.setPose(start);
+        mecanismos = new Robo(hardwareMap);
+
     }
 
     @Override
     public void start() {
-        schedule(follow(follower, path1()));
+        schedule(autoRoutine());
 
     }
 
@@ -75,5 +62,7 @@ public class ExampleAuto extends OpMode {
     public void loop() {
         follower.update();
         Scheduler.execute();
+        telemetry.addData("pose", follower.localizer.pose());
+        telemetry.update();
     }
 }
