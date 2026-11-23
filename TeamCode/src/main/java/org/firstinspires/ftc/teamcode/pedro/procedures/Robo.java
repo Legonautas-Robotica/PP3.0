@@ -34,8 +34,8 @@ public class Robo {
 
     public void coletar(boolean True) {
         if (True) {
-            intake.setPower(-0.7);
-            transferidor.setPower(-0.7);
+            intake.setPower(-1.0);
+            transferidor.setPower(-1.0);
         } else {
             intake.setPower(0);
             transferidor.setPower(0);

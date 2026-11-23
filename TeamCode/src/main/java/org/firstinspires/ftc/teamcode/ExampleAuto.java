@@ -11,6 +11,7 @@ import static com.pedropathing.api.Paths.*;
 import com.pedropathing.ivy.Scheduler;
 
 import static com.pedropathing.ivy.Scheduler.schedule;
+import static com.pedropathing.ivy.commands.Commands.instant;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
@@ -26,28 +27,32 @@ public class ExampleAuto extends OpMode {
     public Robo mecanismos;
     private Follower follower; // you added this before
     private final PoseFactory p = PoseFactory.degrees(); // add this
-    private final Pose startPose = p.of(131, 70, 180);
-    private final Pose pose2 = p.of(48, 70, 0);
-    private final Pose pose3 = p.of(70, 30, 90);
-    private final Pose pose4 = p.of(24, 24, 90);
-    private final Pose endpoint = p.of(23, 119, -135);
-    private final Pose start = p.of(131.3162, 69.7395, 180);
-    private final Pose pose1 = p.of(48, 70, 0);
+    private final Pose startPose = p.of(82.0, 13.0, 90);
+    private final Pose frente_coleta = p.of(33.0, 8.5, 180);
+    private final Pose coleta_01 = p.of(6.7, 8.5, 180);
 
     public Path cT(Pose posicaoInicial, Pose posicaoFinal){return Paths.line(posicaoInicial, posicaoFinal).linear(posicaoFinal, posicaoInicial);}
 
     private Command autoRoutine() {
         return sequential(
-                follow(follower, cT(start, pose1)),
-                follow(follower, cT(pose1, endpoint))
+                instant(() -> mecanismos.coletar(true)),
+                //timer de x segundos
+                instant(() -> mecanismos.coletar(false)),
+                follow(follower, cT(startPose, frente_coleta)),
+                instant(() -> mecanismos.coletar(true)),
+                follow(follower, cT(frente_coleta, coleta_01)),
+                instant(() -> mecanismos.coletar(false))
+
+
         );
     }
 
     @Override
+
     public void init() {
         Scheduler.reset();
         follower = Constants.create(hardwareMap);
-        follower.setPose(start);
+        follower.setPose(startPose);
         mecanismos = new Robo(hardwareMap);
 
     }
