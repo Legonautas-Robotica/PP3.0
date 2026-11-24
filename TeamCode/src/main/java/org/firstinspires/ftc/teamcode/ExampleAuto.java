@@ -37,7 +37,7 @@ public class ExampleAuto extends OpMode {
         return sequential(
                 instant(() -> mecanismos.ligar_lanca()),
                 instant(() -> mecanismos.lancar())
-                /*instant(() -> mecanismos.coletar(true)),
+                /*instant(() -> mecanismos.coletar(true))
                 //timer de x segundos
                 instant(() -> mecanismos.coletar(false)),
                 follow(follower, cT(startPose, frente_coleta)),
