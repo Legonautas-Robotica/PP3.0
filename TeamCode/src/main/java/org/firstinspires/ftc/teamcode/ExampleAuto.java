@@ -35,14 +35,16 @@ public class ExampleAuto extends OpMode {
 
     private Command autoRoutine() {
         return sequential(
-                instant(() -> mecanismos.coletar(true)),
+                instant(() -> mecanismos.ligar_lanca()),
+                instant(() -> mecanismos.lancar())
+                /*instant(() -> mecanismos.coletar(true)),
                 //timer de x segundos
                 instant(() -> mecanismos.coletar(false)),
                 follow(follower, cT(startPose, frente_coleta)),
                 instant(() -> mecanismos.coletar(true)),
                 follow(follower, cT(frente_coleta, coleta_01)),
                 instant(() -> mecanismos.coletar(false))
-
+                 */
 
         );
     }
@@ -53,6 +55,7 @@ public class ExampleAuto extends OpMode {
         Scheduler.reset();
         follower = Constants.create(hardwareMap);
         follower.setPose(startPose);
+
         mecanismos = new Robo(hardwareMap);
 
     }
