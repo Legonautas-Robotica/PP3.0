@@ -7,15 +7,14 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.api.PoseFactory;
 import com.pedropathing.math.Pose;
-import static com.pedropathing.api.Paths.*;
 import com.pedropathing.ivy.Scheduler;
 
 import static com.pedropathing.ivy.Scheduler.schedule;
 import static com.pedropathing.ivy.commands.Commands.instant;
 import static com.pedropathing.ivy.groups.Groups.sequential;
-import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
 import static com.pedropathing.ivy.Scheduler.schedule;
+import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
 import com.pedropathing.paths.Path;
 
@@ -23,28 +22,34 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.pedro.procedures.Robo;
 
 @Autonomous
-public class ExampleAuto extends OpMode {
+public class AutoRedLan1 extends OpMode {
     public Robo mecanismos;
     private Follower follower; // you added this before
     private final PoseFactory p = PoseFactory.degrees(); // add this
-    private final Pose startPose = p.of(82.0, 13.0, 90);
-    private final Pose frente_coleta = p.of(33.0, 8.5, 180);
-    private final Pose coleta_01 = p.of(6.7, 8.5, 180);
+    private final Pose startPose = p.of(58.0, 8.5, 90);
+    private final Pose lancar = p.of(58, 22, 180);
+    private final Pose frente_coleta = p.of(22, 8.5, 180);
+    private final Pose coletar = p.of(8.5, 8.5, 180);
 
     public Path cT(Pose posicaoInicial, Pose posicaoFinal){return Paths.line(posicaoInicial, posicaoFinal).linear(posicaoFinal, posicaoInicial);}
 
     private Command autoRoutine() {
         return sequential(
                 instant(() -> mecanismos.ligar_lanca()),
-                instant(() -> mecanismos.lancar())
-                /*instant(() -> mecanismos.coletar(true))
-                //timer de x segundos
-                instant(() -> mecanismos.coletar(false)),
-                follow(follower, cT(startPose, frente_coleta)),
-                instant(() -> mecanismos.coletar(true)),
-                follow(follower, cT(frente_coleta, coleta_01)),
-                instant(() -> mecanismos.coletar(false))
-                 */
+                follow(follower, cT(startPose, lancar)),
+                instant(() -> mecanismos.abrir_servo()),
+                instant(() -> mecanismos.lancar()),
+                instant(() -> mecanismos.fechar_servo()),
+                follow(follower, cT(lancar, frente_coleta)),
+                instant(() -> mecanismos.coletar(true,true)),
+                follow(follower, cT(frente_coleta, coletar)),
+                follow(follower, cT(coletar, frente_coleta)), // A ideia dessa repetição é ele ir e voltar tentando ao máximo coletar as bolas
+                follow(follower, cT(frente_coleta, coletar)),
+                follow(follower, cT(coletar, lancar))
+
+                        // O robô iniciaria na parede, andaria, lançaria, iria para a coleta no canto inferior esquerdo da arena,
+                        // coletaria as bolas, garantiria que coletou, e retornaria à posição de lançamento.
+
 
         );
     }

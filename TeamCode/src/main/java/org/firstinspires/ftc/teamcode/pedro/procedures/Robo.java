@@ -80,6 +80,7 @@ public class Robo {
 
             /*if (sensorSentinela) {
                 temporizadorLancamento = System.currentTimeMillis();
+
             }
              */
         }
