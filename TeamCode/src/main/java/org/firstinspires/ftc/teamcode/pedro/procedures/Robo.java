@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.pedropathing.follower.Follower;
 
 public class Robo {
     DcMotorEx motorDID, motorDIE, motorTD, motorTE, lan;
@@ -85,4 +86,5 @@ public class Robo {
              */
         }
     }
+
 }
